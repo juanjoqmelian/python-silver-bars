@@ -24,4 +24,4 @@ class SilverBarsLiveOrdersBoardTest(unittest.TestCase):
     def test_board_is_empty_after_cancelling_existing_order(self):
         order_id = self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
         self.live_orders_board.cancel(order_id)
-        self.assertEqual('', self.live_orders_board.summary())
+        self.assertEqual(SummaryInfo(), self.live_orders_board.summary())
