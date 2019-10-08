@@ -25,3 +25,13 @@ class SilverBarsLiveOrdersBoardTest(unittest.TestCase):
         order_id = self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
         self.live_orders_board.cancel(order_id)
         self.assertEqual(SummaryInfo(), self.live_orders_board.summary())
+
+    def test_register_two_identical_orders_and_remove_only_one_of_them(self):
+        self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
+        orderId = self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
+        self.assertEqual(SummaryInfo('BUY: 10 kg for £12.50', 'BUY: 10 kg for £12.50'), self.live_orders_board.summary())
+        self.live_orders_board.cancel(orderId)
+        self.assertEqual(SummaryInfo('BUY: 10 kg for £12.50'), self.live_orders_board.summary())
+
+    def test_raise_exception_when_deleting_non_existing_order(self):
+        self.assertRaises(ValueError, lambda:self.live_orders_board.cancel('non-existing-order-id'))
