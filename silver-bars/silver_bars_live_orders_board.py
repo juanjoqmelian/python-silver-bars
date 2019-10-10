@@ -6,8 +6,10 @@ from order import Order
 from order_type import OrderType
 from summary_info import SummaryInfo
 
+
 class OrdersSorter:
-    def sort_by_type(self, orders: list):
+    @staticmethod
+    def sort_by_type(orders: list):
         orders_by_type = dict()
         for order_type, items in groupby(orders, key=lambda order: order.type):
             items_for_type = list(items)
@@ -18,11 +20,37 @@ class OrdersSorter:
             orders_by_type[order_type] = items_for_type
         return orders_by_type
 
+
+class OrdersGrouper:
+    @staticmethod
+    def group_by_type_and_price(orders_by_type):
+        final_orders = dict()
+        for order_type in orders_by_type.keys():
+            items = orders_by_type[order_type]
+            final_orders[order_type] = dict()
+            for price, items_by_price in groupby(list(items), key=lambda order: order.price):
+                order = reduce(
+                    lambda left, right: Order(right.user_id, left.quantity + right.quantity, right.price, right.type,
+                                              right.id), list(items_by_price))
+                final_orders[order_type][price] = [order]
+        return final_orders
+
+
+class SummaryGenerator:
+    @staticmethod
+    def generate(final_orders):
+        summaries = []
+        for orders_by_price in final_orders.values():
+            for orders in orders_by_price.values():
+                for order in orders:
+                    summaries.append(order.summary())
+        return summaries
+
+
 class SilverBarsLiveOrdersBoard:
 
-    def __init__(self, sorter: OrdersSorter) -> None:
+    def __init__(self) -> None:
         self.orders = []
-        self.sorter = sorter
 
     def register(self, order: Order) -> str:
         """Registers a valid order in the live orders board, returning the id assigned to the new order"""
@@ -34,30 +62,10 @@ class SilverBarsLiveOrdersBoard:
 
     def summary(self) -> SummaryInfo:
         """Shows a summary list for all the existing orders in the board"""
-        orders_by_type = self.sorter.sort_by_type(self.orders)
-        final_orders = self.group_by_order_type(orders_by_type)
-        summaries = self.obtain_summaries(final_orders)
+        orders_by_type = OrdersSorter.sort_by_type(self.orders)
+        final_orders = OrdersGrouper.group_by_type_and_price(orders_by_type)
+        summaries = SummaryGenerator.generate(final_orders)
         return SummaryInfo(*summaries)
-
-    def obtain_summaries(self, final_orders):
-        summaries = []
-        for orders_by_price in final_orders.values():
-            for orders in orders_by_price.values():
-                for order in orders:
-                    summaries.append(order.summary())
-        return summaries
-
-    def group_by_order_type(self, orders_by_type):
-        final_orders = dict()
-        for order_type in orders_by_type.keys():
-            items = orders_by_type[order_type]
-            final_orders[order_type] = dict()
-            for price, items_by_price in groupby(list(items), key=lambda order: order.price):
-                order = reduce(
-                    lambda left, right: Order(right.user_id, left.quantity + right.quantity, right.price, right.type,
-                                              right.id), list(items_by_price))
-                final_orders[order_type][price] = [order]
-        return final_orders
 
     def cancel(self, order_id: str) -> None:
         """Cancels an existing order in the board. Raises exception if order does not exist."""
