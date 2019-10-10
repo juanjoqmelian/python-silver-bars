@@ -5,13 +5,14 @@ from decimal import Decimal
 from order import Order
 from order_type import OrderType
 from silver_bars_live_orders_board import SilverBarsLiveOrdersBoard
+from silver_bars_live_orders_board import OrdersSorter
 from summary_info import SummaryInfo
 
 
 class SilverBarsLiveOrdersBoardTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.live_orders_board = SilverBarsLiveOrdersBoard()
+        self.live_orders_board = SilverBarsLiveOrdersBoard(OrdersSorter())
 
     def test_register_an_order(self):
         self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
