@@ -33,13 +33,9 @@ class SilverBarsLiveOrdersBoard:
 
     def __sort_by_type(self):
         orders_by_type = dict()
-        for order_type, items in groupby(self.orders, key=lambda order: order.type):
-            items_for_type = list(items)
-            if order_type == OrderType.SELL:
-                items_for_type.sort(key=lambda order: order.price)
-            else:
-                items_for_type.sort(key=lambda order: order.price, reverse=True)
-            orders_by_type[order_type] = items_for_type
+        for order_type, items in groupby(self.orders, key=lambda o: o.type):
+            orders_by_type[order_type] = list(items)
+            orders_by_type[order_type].sort(key=lambda o: o.price) if order_type == OrderType.SELL else orders_by_type[order_type].sort(key=lambda o: o.price, reverse=True)
         return orders_by_type
 
     def __group_by_type_and_price(self, orders_by_type):
@@ -47,10 +43,11 @@ class SilverBarsLiveOrdersBoard:
         for order_type in orders_by_type.keys():
             items = orders_by_type[order_type]
             final_orders[order_type] = dict()
-            for price, items_by_price in groupby(list(items), key=lambda order: order.price):
-                order = reduce(
-                    lambda left, right: Order(right.user_id, left.quantity + right.quantity, right.price, right.type,
-                                              right.id), list(items_by_price))
+            for price, items_by_price in groupby(list(items), key=lambda o: o.price):
+                order = reduce(lambda left, right:
+                                   Order(right.user_id, left.quantity + right.quantity, right.price, right.type, right.id),
+                                   list(items_by_price)
+                               )
                 final_orders[order_type][price] = order
         return final_orders
 
