@@ -69,8 +69,4 @@ class SilverBarsLiveOrdersBoard:
 
     def cancel(self, order_id: str) -> None:
         """Cancels an existing order in the board. Raises exception if order does not exist."""
-        for order in self.orders:
-            if order.id == order_id:
-                self.orders.remove(order)
-                return
-        raise ValueError(f'Order with id {order_id} does not exist!')
+        self.orders = [order for order in self.orders if order.id != order_id]
