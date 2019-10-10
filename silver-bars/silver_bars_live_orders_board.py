@@ -39,12 +39,7 @@ class OrdersGrouper:
 class SummaryGenerator:
     @staticmethod
     def generate(final_orders):
-        summaries = []
-        for orders_by_price in final_orders.values():
-            for orders in orders_by_price.values():
-                for order in orders:
-                    summaries.append(order.summary())
-        return summaries
+        return [order.summary() for orders_by_price in final_orders.values() for orders in orders_by_price.values() for order in orders]
 
 
 class SilverBarsLiveOrdersBoard:
