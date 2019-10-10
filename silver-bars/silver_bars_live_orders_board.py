@@ -1,6 +1,8 @@
 import uuid
+from itertools import groupby
 
 from order import Order
+from order_type import OrderType
 from summary_info import SummaryInfo
 
 
@@ -20,8 +22,19 @@ class SilverBarsLiveOrdersBoard:
     def summary(self) -> SummaryInfo:
         """Shows a summary list for all the existing orders in the board"""
         summaries = []
-        for order in self.orders:
-            summaries.append(order.summary())
+
+        orders_by_type = dict()
+        for order_type, orders in groupby(self.orders, key=lambda order: order.type):
+            orders_for_type = list(orders)
+            if order_type == OrderType.SELL:
+                orders_for_type.sort(key=lambda order: order.price)
+            else:
+                orders_for_type.sort(key=lambda order: order.price, reverse=True)
+            orders_by_type[order_type] = orders_for_type
+
+        for orders in orders_by_type.values():
+            for order in orders:
+                summaries.append(order.summary())
         return SummaryInfo(*summaries)
 
     def cancel(self, order_id: str) -> None:

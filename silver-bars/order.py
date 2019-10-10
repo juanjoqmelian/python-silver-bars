@@ -19,3 +19,11 @@ class Order:
 
     def summary(self) -> str:
         return f'{self.type.name}: {self.quantity} kg for £{self.price}'
+
+    def __str__(self) -> str:
+        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.price}'
+
+    def __repr__(self) -> str:
+        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.price}'
+
+
