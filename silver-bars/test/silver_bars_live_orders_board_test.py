@@ -27,18 +27,6 @@ class SilverBarsLiveOrdersBoardTest(unittest.TestCase):
         self.live_orders_board.cancel(order_id)
         self.assertEqual(SummaryInfo(), self.live_orders_board.summary())
 
-    def test_register_two_identical_orders_and_remove_only_one_of_them(self):
-        self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
-        order_id = self.live_orders_board.register(Order('my-user-id', 10, Decimal(12.5), OrderType.BUY))
-        self.assertEqual(SummaryInfo(
-            'BUY: 10 kg for £12.50',
-            'BUY: 10 kg for £12.50'
-        ),
-            self.live_orders_board.summary()
-        )
-        self.live_orders_board.cancel(order_id)
-        self.assertEqual(SummaryInfo('BUY: 10 kg for £12.50'), self.live_orders_board.summary())
-
     def test_raise_exception_when_deleting_non_existing_order(self):
         self.assertRaises(ValueError, lambda: self.live_orders_board.cancel('non-existing-order-id'))
 
@@ -81,6 +69,22 @@ class SilverBarsLiveOrdersBoardTest(unittest.TestCase):
             'BUY: 20 kg for £27.90',
             'BUY: 20 kg for £27.20',
             'SELL: 20 kg for £27.20',
+            'SELL: 20 kg for £27.90'
+        ),
+            self.live_orders_board.summary()
+        )
+
+    def test_group_orders_of_same_price_and_type(self):
+        self.live_orders_board.register(Order('my-user-id', 20, Decimal(27.2), OrderType.BUY))
+        self.live_orders_board.register(Order('my-user-id', 30, Decimal(27.2), OrderType.BUY))
+        self.live_orders_board.register(Order('my-user-id', 20, Decimal(27.9), OrderType.BUY))
+        self.live_orders_board.register(Order('my-user-id', 20, Decimal(27.2), OrderType.SELL))
+        self.live_orders_board.register(Order('my-user-id', 30, Decimal(27.2), OrderType.SELL))
+        self.live_orders_board.register(Order('my-user-id', 20, Decimal(27.9), OrderType.SELL))
+        self.assertEqual(SummaryInfo(
+            'BUY: 20 kg for £27.90',
+            'BUY: 50 kg for £27.20',
+            'SELL: 50 kg for £27.20',
             'SELL: 20 kg for £27.90'
         ),
             self.live_orders_board.summary()

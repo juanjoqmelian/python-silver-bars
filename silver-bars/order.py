@@ -4,8 +4,8 @@ from order_type import OrderType
 
 
 class Order:
-    def __init__(self, user_id: str, quantity: int, price: Decimal, order_type: OrderType) -> None:
-        self.id = ''
+    def __init__(self, user_id: str, quantity: int, price: Decimal, order_type: OrderType, order_id='') -> None:
+        self.id = order_id
         self.user_id = user_id
         self.quantity = quantity
         self.price = price.quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN) if price else price
@@ -21,9 +21,7 @@ class Order:
         return f'{self.type.name}: {self.quantity} kg for £{self.price}'
 
     def __str__(self) -> str:
-        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.price}'
+        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.type}'
 
     def __repr__(self) -> str:
-        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.price}'
-
-
+        return f'id: {self.id}, user_id: {self.user_id}, quantity: {self.quantity}, price: {self.price}, type: {self.type}'

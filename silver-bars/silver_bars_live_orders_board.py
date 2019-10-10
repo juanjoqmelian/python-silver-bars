@@ -1,5 +1,6 @@
 import uuid
 from itertools import groupby
+from functools import reduce
 
 from order import Order
 from order_type import OrderType
@@ -24,18 +25,28 @@ class SilverBarsLiveOrdersBoard:
         summaries = []
 
         orders_by_type = dict()
-        for order_type, orders in groupby(self.orders, key=lambda order: order.type):
-            orders_for_type = list(orders)
+        for order_type, items in groupby(self.orders, key=lambda order: order.type):
+            items_for_type = list(items)
             if order_type == OrderType.SELL:
-                orders_for_type.sort(key=lambda order: order.price)
+                items_for_type.sort(key=lambda order: order.price)
             else:
-                orders_for_type.sort(key=lambda order: order.price, reverse=True)
-            orders_by_type[order_type] = orders_for_type
+                items_for_type.sort(key=lambda order: order.price, reverse=True)
+            orders_by_type[order_type] = items_for_type
 
-        for orders in orders_by_type.values():
-            for order in orders:
-                summaries.append(order.summary())
+        final_orders = dict()
+        for order_type in orders_by_type.keys():
+            items = orders_by_type[order_type]
+            final_orders[order_type] = dict()
+            for price, items_by_price in groupby(list(items), key=lambda order: order.price):
+                order = reduce(lambda left, right: Order(right.user_id, left.quantity + right.quantity, right.price, right.type, right.id), list(items_by_price))
+                final_orders[order_type][price] = [order]
+
+        for orders_by_price in final_orders.values():
+            for orders in orders_by_price.values():
+                for order in orders:
+                    summaries.append(order.summary())
         return SummaryInfo(*summaries)
+
 
     def cancel(self, order_id: str) -> None:
         """Cancels an existing order in the board. Raises exception if order does not exist."""
