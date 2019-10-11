@@ -1,6 +1,6 @@
 import uuid
-from itertools import groupby
 from functools import reduce
+from itertools import groupby
 
 from order import Order
 from order_type import OrderType
@@ -41,14 +41,13 @@ class SilverBarsLiveOrdersBoard:
     def __group_by_type_and_price(self, orders_by_type):
         final_orders = dict()
         for order_type in orders_by_type.keys():
-            items = orders_by_type[order_type]
             final_orders[order_type] = dict()
-            for price, items_by_price in groupby(list(items), key=lambda o: o.price):
-                order = reduce(lambda left, right:
-                                   Order(right.user_id, left.quantity + right.quantity, right.price, right.type, right.id),
-                                   list(items_by_price)
-                               )
-                final_orders[order_type][price] = order
+            for price, items_by_price in groupby(list(orders_by_type[order_type]), key=lambda o: o.price):
+                final_orders[order_type][price] = reduce(lambda left, right:
+                                                         Order(right.user_id, left.quantity + right.quantity,
+                                                               right.price, right.type, right.id),
+                                                         list(items_by_price)
+                                                         )
         return final_orders
 
     def __generate_summary(self, final_orders):
